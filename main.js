@@ -43,7 +43,7 @@ const subscribeToNotifications = () => {
 // Function to register the Service Worker and get FCM token
 const registerServiceWorkerAndGetToken = () => {
   navigator.serviceWorker
-    .register('/FCM/firebase-messaging-sw.js') // Ensure this path is correct for GitHub Pages
+    .register('/firebase-messaging-sw.js') // Ensure this path is correct for GitHub Pages
     .then((registration) => {
       console.log("Service Worker registered:", registration);
 
