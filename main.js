@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-messaging.js";
+import { getMessaging, getToken } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-messaging.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBB5SvT1nvmUxR2E26pfcJ9yBzpL0VfBBM",
@@ -15,33 +15,25 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const messaging = getMessaging(app);
 
-// Request permission for notifications
-document.getElementById('subscribe').addEventListener('click', () => {
-  Notification.requestPermission().then((permission) => {
-    if (permission === 'granted') {
-      console.log('Notification permission granted.');
-
-      // Get FCM token
-      getToken(messaging, { vapidKey: "BK_UUPiZwvmHO_PAkBWBt5VQdpaOPu1e8950c-SXIyBf_vPIYgeWQsg0N9J8Wr3dByV8Ij8lnHksvie0mgbUeV0" })
-        .then((currentToken) => {
-          if (currentToken) {
-            console.log('Token generated:', currentToken);
-            document.getElementById('tokenDisplay').innerText = `Token: ${currentToken}`;
-          } else {
-            console.error('No registration token available.');
-          }
-        })
-        .catch((err) => {
-          console.error('An error occurred while retrieving token.', err);
-        });
+// Register the service worker
+navigator.serviceWorker
+  .register('/firebase-messaging-sw.js') // Ensure this path matches your GitHub Pages setup
+  .then((registration) => {
+    console.log('Service worker registered:', registration);
+    // Get FCM token
+    return getToken(messaging, {
+      vapidKey: "BK_UUPiZwvmHO_PAkBWBt5VQdpaOPu1e8950c-SXIyBf_vPIYgeWQsg0N9J8Wr3dByV8Ij8lnHksvie0mgbUeV0", // Your VAPID key
+      serviceWorkerRegistration: registration,
+    });
+  })
+  .then((currentToken) => {
+    if (currentToken) {
+      console.log('FCM Token:', currentToken);
+      document.getElementById('tokenDisplay').innerText = `Token: ${currentToken}`;
     } else {
-      console.error('Notification permission denied.');
+      console.log('No registration token available. Request permission to generate one.');
     }
+  })
+  .catch((err) => {
+    console.error('Error while retrieving token:', err);
   });
-});
-
-// Handle foreground messages
-onMessage(messaging, (payload) => {
-  console.log('Message received in foreground: ', payload);
-  alert(`Notification: ${payload.notification.title} - ${payload.notification.body}`);
-});
