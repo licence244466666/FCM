@@ -38,7 +38,7 @@ document.getElementById('subscribe').addEventListener('click', async () => {
 
       // Get the FCM token
       const token = await getToken(messaging, {
-        vapidKey: 'BK_UUPiZwvmHO_PAkBWBt5VQdpaOPu1e8950c-SXIyBf_vPIYgeWQsg0N9J8Wr3dByV8Ij8lnHksvie0mgbUeV0' // Your actual VAPID key
+        vapidKey: 'YOUR_VAPID_KEY_HERE' // Replace with your actual VAPID key
       });
 
       if (token) {
