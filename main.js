@@ -1,8 +1,8 @@
-// Import Firebase modules
+// Ensure Firebase is initialized first
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-messaging.js";
+import { getMessaging, getToken } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-messaging.js";
 
-// Firebase configuration
+// Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyBB5SvT1nvmUxR2E26pfcJ9yBzpL0VfBBM",
   authDomain: "wordpress-7d715.firebaseapp.com",
@@ -15,84 +15,41 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
+
+// Initialize Firebase Cloud Messaging
 const messaging = getMessaging(app);
 
-// Function to handle subscription
-const subscribeToNotifications = () => {
-  console.log("Subscribe button clicked.");
+// Register the service worker
+navigator.serviceWorker.register('/FCM/FCM/firebase-messaging-sw.js')
+  .then((registration) => {
+    console.log('Service Worker Registered:', registration);
+  })
+  .catch((error) => {
+    console.error('Error during service worker registration:', error);
+  });
 
-  // Check if notification permissions are granted
-  if (Notification.permission === "granted") {
-    console.log("Notification permission already granted.");
-    registerServiceWorkerAndGetToken();
-  } else if (Notification.permission === "default") {
-    // Request notification permission
-    Notification.requestPermission().then((permission) => {
-      if (permission === "granted") {
-        console.log("Notification permission granted.");
-        registerServiceWorkerAndGetToken();
-      } else {
-        console.log("Notification permission denied.");
-      }
-    });
-  } else {
-    console.log("Notifications are blocked. Please enable them in your browser settings.");
-  }
-};
+// Request the FCM token
+document.getElementById('subscribe').addEventListener('click', async () => {
+  try {
+    // Request permission to send notifications
+    const permission = await Notification.requestPermission();
+    if (permission === "granted") {
+      console.log('Notification permission granted.');
 
-// Function to register the Service Worker and get FCM token
-const registerServiceWorkerAndGetToken = () => {
-  navigator.serviceWorker
-    .register('/FCM/FCM/firebase-messaging-sw.js') // Ensure this path is correct for GitHub Pages
-    .then((registration) => {
-      console.log("Service Worker registered:", registration);
-
-      // Request FCM Token
-      return getToken(messaging, {
-        vapidKey: "BK_UUPiZwvmHO_PAkBWBt5VQdpaOPu1e8950c-SXIyBf_vPIYgeWQsg0N9J8Wr3dByV8Ij8lnHksvie0mgbUeV0",
-        serviceWorkerRegistration: registration,
+      // Get the FCM token
+      const token = await getToken(messaging, {
+        vapidKey: 'BK_UUPiZwvmHO_PAkBWBt5VQdpaOPu1e8950c-SXIyBf_vPIYgeWQsg0N9J8Wr3dByV8Ij8lnHksvie0mgbUeV0' // Your actual VAPID key
       });
-    })
-    .then((currentToken) => {
-      if (currentToken) {
-        console.log("FCM Token:", currentToken);
 
-        // Display the token in the UI (optional)
-        const tokenDisplayElement = document.getElementById("tokenDisplay");
-        if (tokenDisplayElement) {
-          tokenDisplayElement.innerText = `FCM Token: ${currentToken}`;
-        }
+      if (token) {
+        console.log('FCM Token:', token);
       } else {
-        console.log("No registration token available. Request permission to generate one.");
+        console.log('No FCM token received');
       }
-    })
-    .catch((error) => {
-      console.error("Error retrieving token:", error);
-    });
-};
-
-// Listen for foreground messages
-onMessage(messaging, (payload) => {
-  console.log("Message received in foreground:", payload);
-
-  // Optionally show notification in the browser
-  if (Notification.permission === "granted") {
-    const notificationTitle = payload.notification.title || "New Notification";
-    const notificationOptions = {
-      body: payload.notification.body || "You have a new message.",
-      icon: payload.notification.icon || "/FCM/firebase-logo.png", // Adjust to your logo
-    };
-
-    new Notification(notificationTitle, notificationOptions);
-  }
-});
-
-// Add event listener to the "Subscribe" button after DOM is loaded
-document.addEventListener("DOMContentLoaded", () => {
-  const subscribeButton = document.getElementById("subscribe");
-  if (subscribeButton) {
-    subscribeButton.addEventListener("click", subscribeToNotifications);
-  } else {
-    console.log('Subscribe button not found!');
+    } else {
+      console.log('Notification permission denied');
+    }
+  } catch (error) {
+    console.error("Error retrieving token:", error);
   }
 });
