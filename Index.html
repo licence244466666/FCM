@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FCM Push Notification</title>
+</head>
+<body>
+    <h1>Firebase Cloud Messaging (FCM) Demo</h1>
+    <button id="subscribe">Subscribe for Notifications</button>
+
+    <script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-messaging.js"></script>
+
+    <script>
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyBB5SvT1nvmUxR2E26pfcJ9yBzpL0VfBBM",
+            authDomain: "wordpress-7d715.firebaseapp.com",
+            projectId: "wordpress-7d715",
+            storageBucket: "wordpress-7d715.firebasestorage.app",
+            messagingSenderId: "825792468964",
+            appId: "1:825792468964:web:02e8183833e34424f699f1",
+            measurementId: "G-HCB0DYTB59"
+        };
+
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const messaging = firebase.messaging();
+
+        // Request for Notification Permission
+        document.getElementById('subscribe').addEventListener('click', () => {
+            Notification.requestPermission().then(permission => {
+                if (permission === 'granted') {
+                    // Get FCM Token
+                    messaging.getToken().then(token => {
+                        console.log("FCM Token:", token);
+                    }).catch((err) => {
+                        console.error("Error retrieving token:", err);
+                    });
+                } else {
+                    console.error("Notification permission denied");
+                }
+            });
+        });
+    </script>
+</body>
+</html>
