@@ -87,13 +87,12 @@ onMessage(messaging, (payload) => {
   }
 });
 
-// Add event listener to the "Subscribe" button
-document.getElementById("subscribeButton").addEventListener("click", subscribeToNotifications);
-
-// Check if notifications are already enabled on page load
-if (Notification.permission === "granted") {
-  console.log("Notifications are already enabled.");
-  registerServiceWorkerAndGetToken();
-} else {
-  console.log("Notifications are not enabled. Please subscribe.");
-}
+// Add event listener to the "Subscribe" button after DOM is loaded
+document.addEventListener("DOMContentLoaded", () => {
+  const subscribeButton = document.getElementById("subscribe");
+  if (subscribeButton) {
+    subscribeButton.addEventListener("click", subscribeToNotifications);
+  } else {
+    console.log('Subscribe button not found!');
+  }
+});
